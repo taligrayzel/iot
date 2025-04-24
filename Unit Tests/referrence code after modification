@@ -1,0 +1,72 @@
+#https://nathanmelenbrink.github.io/lab/output/emf/encoder_steps.html
+
+#include <Encoder.h>
+
+const int A1A = 14;  // define pin for A-1A (PWM Speed)
+const int A1B = 27;  // define pin for A-1B (direction)
+const int pwmChannel_A = 0;
+
+// setting PWM properties
+const int freq = 5000;
+const int resolution = 8;
+
+Encoder motor_A(26, 25);
+long position_A  = 0;
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(A1A, OUTPUT); // specify these pins as outputs
+  pinMode(A1B, OUTPUT);
+
+  // attach the channel to the GPIO to be controlled
+  ledcSetup(pwmChannel_A, freq, resolution);
+  ledcAttachPin(A1A, pwmChannel_A);
+
+}
+
+void loop() {
+
+  moveMotor_A(0, 255);  // go to position at full speed
+  delay(2000);      // delay for 2 seconds
+
+  moveMotor_A(2800, 255);  // go to position at full speed
+  delay(1000);      // delay for 1 second
+}
+
+
+// This is a custom function to drive Motor A
+// inputs: target position, speed (0-255)
+// outputs: motor control
+
+void moveMotor_A(long target, int spd) {
+
+  position_A = motor_A.read();
+  long steps_to_target = target - position_A; 
+
+  if (steps_to_target > 0) {
+    digitalWrite(A1B, HIGH);
+    spd = 255 - spd;    // invert the speed
+  }
+  else {
+    digitalWrite(A1B, LOW);
+  }
+
+  // write spd to the motor until steps reaches threshold
+  while (abs(steps_to_target) > 10) {
+    position_A = motor_A.read();
+    steps_to_target = target - position_A; 
+
+    // Serial.print("steps_to_target: ");
+    // Serial.print(steps_to_target);
+    // Serial.print(", position_A: ");
+    // Serial.println(position_A);
+
+    ledcWrite(pwmChannel_A, spd);
+    delay(1);
+  }
+
+  // turn the motor off
+  ledcWrite(pwmChannel_A, 0);
+  digitalWrite(A1B, LOW);
+}
