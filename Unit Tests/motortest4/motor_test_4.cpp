@@ -1,8 +1,11 @@
 #include "motor_test_4.h"
 
+#include <arduino.h> 
+
 
 // Global encoder-to-motor pointer map
 Motor* encoderMap[40] = { nullptr };
+
 
 Motor::Motor(int in1, int in2, int enc1, int enc2, int gearR, int pwmChannel1, int pwmChannel2)
   : in1(in1), in2(in2), enc1(enc1), enc2(enc2), gearR(gearR),
@@ -59,7 +62,9 @@ void Motor::clear_movement() {
 
 #define X(PIN) \
   void IRAM_ATTR encoderISR##PIN() { \
-    if (encoderMap[EXPAND(PIN)]) encoderMap[EXPAND(PIN)]->updateEncoder(); \
+    if (encoderMap[EXPAND(PIN)]){\
+      encoderMap[EXPAND(PIN)]->updateEncoder(); \
+    } \
   }
   ENCODER_PINS
 #undef X

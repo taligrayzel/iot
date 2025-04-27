@@ -19,9 +19,9 @@ public:
    * @param pwmChannel2 LEDC PWM channel for IN2
    */
   Motor(int in1, int in2, int enc1, int enc2, int gearR, int pwmChannel1, int pwmChannel2);
-
-  // Motor controls
-  void forward(int speed = 255);  // speed: 0–255
+  
+  //Motor controls
+  void forward(int speed = 255);
   void reverse(int speed = 255);
   void stop();
 

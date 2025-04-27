@@ -17,14 +17,16 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("Robot setup complete");
+  encoderMap[ENC_A_1]= &m1;
+  encoderMap[ENC_A_2]= &m1;
+  attachAllEncoderInterrupts();
 }
 
 void loop() {
   
-  m1.forward(255);
+  m1.stop();
   delay(3000);
   m1.reverse(255);
   delay(3000);
   Serial.println(m1.get_deg());
-
 }
