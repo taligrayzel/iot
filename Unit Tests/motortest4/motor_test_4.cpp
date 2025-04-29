@@ -11,12 +11,19 @@ Motor::Motor(int in1, int in2, int enc1, int enc2, int gearR, int pwmChannel1, i
   : in1(in1), in2(in2), enc1(enc1), enc2(enc2), gearR(gearR),
     pwmChannel1(pwmChannel1), pwmChannel2(pwmChannel2) {
 
+
+  encoderMap[enc1]= this;
+  encoderMap[enc2]= this;
+
   pinMode(enc1, INPUT_PULLUP);
   pinMode(enc2, INPUT_PULLUP);
 
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+
   // Setup LEDC PWM
-  ledcSetup(pwmChannel1, 1000, 8); // 1kHz, 8-bit resolution
-  ledcSetup(pwmChannel2, 1000, 8);
+  ledcSetup(pwmChannel1, 18000, 8); // 1kHz, 8-bit resolution
+  ledcSetup(pwmChannel2, 18000, 8);
 
   ledcAttachPin(in1, pwmChannel1);
   ledcAttachPin(in2, pwmChannel2);
@@ -36,8 +43,8 @@ void Motor::reverse(int speed) {
 }
 
 void Motor::stop() {
-  ledcWrite(pwmChannel1, 0);
-  ledcWrite(pwmChannel2, 0);
+  ledcWrite(pwmChannel1, 255);
+  ledcWrite(pwmChannel2, 255);
 }
 
 void Motor::updateEncoder() {
@@ -53,12 +60,18 @@ void Motor::clear_movement() {
   encoderValue = 0;
 }
 
+
+// Forward declare the global encoder map
+extern class Motor* encoderMap[40];
+
 #define EXPAND(x) x
 
 // Interrupt Helpers
 #define ENCODER_PINS \
   X(32)         \
-  X(33)         
+  X(33)         \
+  X(34)         \
+  X(35)         
 
 #define X(PIN) \
   void IRAM_ATTR encoderISR##PIN() { \
