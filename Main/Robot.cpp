@@ -3,24 +3,20 @@
 
 // Constructor to initialize motors and distance sensor
 Robot::Robot()
-    : motor1(IN_A_1, IN_A_2, ENC_A_1, ENC_A_2, GEAR_RATIO),
-      motor2(IN_B_1, IN_B_2, ENC_B_1, ENC_B_2, GEAR_RATIO),
-      distanceSensor(DIST_SENSOR_TRIG_PIN, DIST_SENSOR_ECHO_PIN) {
-    pinMode(SENSOR_1_PIN, INPUT);
-    pinMode(SENSOR_2_PIN, INPUT);
-    pinMode(SENSOR_3_PIN, INPUT);
+    : motor1(IN_A_1, IN_A_2, ENC_A_1, ENC_A_2,PWM_A_1,PWM_A_2,GEAR_RATIO,TPR),
+      motor2(IN_B_1, IN_B_2, ENC_B_1, ENC_B_2,PWM_B_1,PWM_B_2,GEAR_RATIO,TPR){
 }
 
 // Move forward by controlling both motors
 void Robot::moveForward() {
-    motor1.forward();
-    motor2.forward();
+    motor1.forward(170);
+    motor2.forward(200);
 }
 
 // Move backward by controlling both motors
 void Robot::moveBackward() {
-    motor1.reverse();
-    motor2.reverse();
+    motor1.reverse(200);
+    motor2.reverse(200);
 }
 
 // Stop both motors
@@ -43,32 +39,25 @@ void Robot::turnRight() {
 
 // Read all sensors (simplified)
 void Robot::readSensors() {
-    int sensor1Value = digitalRead(SENSOR_1_PIN);
-    int sensor2Value = digitalRead(SENSOR_2_PIN);
-    int sensor3Value = digitalRead(SENSOR_3_PIN);
-
-    // Process sensor data (e.g., based on sensor input, make decisions)
-    Serial.print("Sensor 1: ");
-    Serial.println(sensor1Value);
-    Serial.print("Sensor 2: ");
-    Serial.println(sensor2Value);
-    Serial.print("Sensor 3: ");
-    Serial.println(sensor3Value);
 }
 
 // Display sensor values to the serial monitor
 void Robot::displaySensorValues() {
-    Serial.print("Sensor 1: ");
-    Serial.println(digitalRead(SENSOR_1_PIN));
-    Serial.print("Sensor 2: ");
-    Serial.println(digitalRead(SENSOR_2_PIN));
-    Serial.print("Sensor 3: ");
-    Serial.println(digitalRead(SENSOR_3_PIN));
+  Serial.print("motor1 movement deg: ");
+  Serial.println(motor1.get_deg());
+  Serial.print("motor2 movement deg: ");
+  Serial.println(motor2.get_deg());
+}
+// Display sensor values to the serial monitor
+void Robot::clearMovementData() {
+  motor1.clear_movement();
+  motor2.clear_movement();
 }
 
 // Get the distance from the distance sensor
 long Robot::getDistance() {
-    return distanceSensor.readDistance();
+    return 1;
+    //distanceSensor.readDistance();
 }
 
 // Obstacle avoidance function based on distance sensor reading
@@ -76,7 +65,6 @@ void Robot::avoidObstacle() {
     long distance = getDistance();
     Serial.print("Distance: ");
     Serial.println(distance);
-
     // If an obstacle is detected within a range (e.g., 10 cm), stop the robot
     if (distance < 10) {
         stopMovement();

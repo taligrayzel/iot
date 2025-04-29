@@ -1,22 +1,31 @@
 #include "Robot.h"
+#include "Config.h"
 
-Robot myRobot;  // Use the default constructor
+
+Robot r2d2;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(1000);
-
   Serial.println("Robot setup complete");
+  attachAllEncoderInterrupts();
 }
 
 void loop() {
-  // Move forward
-  myRobot.moveForward();
-  delay(2000);  // Move forward for 2 seconds
-
-  // Avoid obstacles by checking the distance
-  myRobot.avoidObstacle();
-
-  // If no obstacle, continue moving forward
-  delay(1000);
+  // r2d2.moveBackward();
+  //  delay(2000);
+  // r2d2.stopMovement();
+  // delay(2000);
+  r2d2.moveForward();
+  delay(2000);
+  r2d2.stopMovement();
+  r2d2.displaySensorValues();
+  r2d2.clearMovementData();
+  delay(2000);
+  r2d2.moveBackward();
+  delay(2000);
+  r2d2.stopMovement();
+  r2d2.displaySensorValues();
+  r2d2.clearMovementData();
+  delay(2000);
 }

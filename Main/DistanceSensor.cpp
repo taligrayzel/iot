@@ -1,22 +1,18 @@
 #include "DistanceSensor.h"
 
-DistanceSensor::DistanceSensor(int trigPin, int echoPin) : trigPin(trigPin), echoPin(echoPin) {
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
+DistanceSensor::DistanceSensor() {}
+
+bool DistanceSensor::begin() {
+    return lox.begin();
 }
 
 long DistanceSensor::readDistance() {
-    // Send a pulse to trigger the sensor
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
+    VL53L0X_RangingMeasurementData_t measure;
+    lox.rangingTest(&measure, false); // Perform distance measurement
 
-    // Measure the time it takes for the pulse to return
-    long duration = pulseIn(echoPin, HIGH);
-
-    // Calculate distance based on the speed of sound (343 meters/second)
-    long distance = (duration / 2) * 0.0344; // Distance in cm
-    return distance;
+    if (measure.RangeStatus != 4) {
+        return measure.RangeMilliMeter / 10; // Convert mm to cm
+    } else {
+        return -1; // Out of range
+    }
 }

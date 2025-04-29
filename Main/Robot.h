@@ -1,13 +1,14 @@
 #ifndef ROBOT_H
 #define ROBOT_H
 
-#include "Config.h"  // Include the combined config file
+#include "Motor.h" 
+#include "DistanceSensor.h"
 
 class Robot {
 private:
     Motor motor1;
     Motor motor2;
-    DistanceSensor distanceSensor;
+    //DistanceSensor distanceSensor;
 
 public:
     Robot();  // Default constructor
@@ -15,6 +16,7 @@ public:
     void moveForward();
     void moveBackward();
     void stopMovement();
+    void clearMovementData();
     void turnLeft();
     void turnRight();
     void readSensors();

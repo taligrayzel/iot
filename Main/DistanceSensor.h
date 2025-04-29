@@ -2,17 +2,17 @@
 #define DISTANCESENSOR_H
 
 #include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_VL53L0X.h>
 
 class DistanceSensor {
 private:
-    int trigPin;  // Trigger pin
-    int echoPin;  // Echo pin
+    Adafruit_VL53L0X lox;
 
 public:
-    DistanceSensor(int trigPin, int echoPin);
-
-    // Method to read the distance in centimeters
-    long readDistance();
+    DistanceSensor();
+    bool begin();         // Initialize the sensor
+    long readDistance();  // Read distance in centimeters (returns -1 if out of range)
 };
 
 #endif
