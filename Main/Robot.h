@@ -19,10 +19,16 @@ public:
     void clearMovementData();
     void turnLeft();
     void turnRight();
+    void updateMovement();
     void readSensors();
     void displaySensorValues();
     long getDistance();
     void avoidObstacle();
+    void startMovement(double target1, double target2);
+    int slowCrawlTest();
+    int jumpStartTest();
+
+
 };
 
 #endif

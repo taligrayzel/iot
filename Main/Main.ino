@@ -3,29 +3,25 @@
 
 
 Robot r2d2;
+int slowTestCounter = 10;
+ int test_result = 0;
+
+unsigned long startTime = millis();
+
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("Robot setup complete");
   attachAllEncoderInterrupts();
+  r2d2.startMovement(3600,3600);
+  Serial.println("TARGET:,POS:,TIME:");
 }
 
 void loop() {
-  // r2d2.moveBackward();
-  //  delay(2000);
-  // r2d2.stopMovement();
-  // delay(2000);
-  r2d2.moveForward();
-  delay(2000);
-  r2d2.stopMovement();
-  r2d2.displaySensorValues();
-  r2d2.clearMovementData();
-  delay(2000);
-  r2d2.moveBackward();
-  delay(2000);
-  r2d2.stopMovement();
-  r2d2.displaySensorValues();
-  r2d2.clearMovementData();
-  delay(2000);
+  if(slowTestCounter > 0){
+  int interresult = r2d2.jumpStartTest();
+  if(interresult > test_result)
+    test_result = interresult;
+  slowTestCounter--;
+  }
 }

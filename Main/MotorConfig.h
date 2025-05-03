@@ -25,4 +25,8 @@
 
 // Forward declare the global encoder map
 
+
+//Motor A has correct degree for divisor of 60 degrees at calculation.
+// jump starts for 250 initial 5 delay @ 110. 
+ 
 #endif // MOTORCONFIG_H

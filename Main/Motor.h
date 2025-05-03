@@ -25,8 +25,11 @@ public:
 
   // Encoder handling
   void updateEncoder();
+  void updateMovement();
   double get_deg();
+  void set_movement(double target);
   void clear_movement();
+  void printMock();
 
 private:
   int in1, in2;              // Motor driver control pins
@@ -35,4 +38,14 @@ private:
   int pwmChannel1, pwmChannel2; // PWM channels
   volatile long encoderValue;   // Optional use for more precise tracking
   volatile long lastEncoded;
+  volatile int8_t encoder_mock[16];
+
+  // movement params
+  double target, pos; 
+  float kp, kd, ki;
+  long prevT;
+  float eprev;
+  float eintegral;
+
+  portMUX_TYPE encoderMutex;
 };
