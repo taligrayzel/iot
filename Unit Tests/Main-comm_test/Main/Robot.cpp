@@ -6,7 +6,7 @@ Robot::Robot()
     : distanceSensor1(LOX1_ADDRESS, SHT_LOX1),
       distanceSensor2(LOX2_ADDRESS, SHT_LOX2),
       distanceSensor3(LOX3_ADDRESS, SHT_LOX3),
-      distaceDB()
+      DBobject()
       {
 
 }
@@ -21,7 +21,9 @@ void Robot::beginForSensorsSetup(){
 }
 
 void Robot::beginForDB(){
-  distaceDB.connectToDB();
+  DBobject.connectToDB();
+  DBobject.setTime();
+  time_t now = time(nullptr);
   Serial.println("finished connecting to DB");
 
 }
@@ -33,12 +35,12 @@ void Robot::setUpDistanceSensors(){
   digitalWrite(distanceSensor1.loxSHT, LOW);    
   digitalWrite(distanceSensor2.loxSHT, LOW);
   digitalWrite(distanceSensor3.loxSHT, LOW);
-  delay(10);
+  delay(50);
   // all unreset
   digitalWrite(distanceSensor1.loxSHT, HIGH);
   digitalWrite(distanceSensor2.loxSHT, HIGH);
   digitalWrite(distanceSensor3.loxSHT, HIGH);
-  delay(10);
+  delay(50);
 
   // activating LOX1 and reseting LOX2
   digitalWrite(distanceSensor1.loxSHT, HIGH);
@@ -50,12 +52,12 @@ void Robot::setUpDistanceSensors(){
     Serial.println(F("Failed to boot first VL53L0X"));
     while(1);
   }
-  delay(10);
+  delay(50);
 
   // activating LOX2
   digitalWrite(distanceSensor2.loxSHT, HIGH);
   digitalWrite(distanceSensor3.loxSHT, LOW);
-  delay(10);
+  delay(50);
 
   //initing LOX2
   if(!distanceSensor2.lox.begin(distanceSensor2.loxAddress)) {
@@ -65,7 +67,7 @@ void Robot::setUpDistanceSensors(){
 
   // activating LOX3
   digitalWrite(distanceSensor3.loxSHT, HIGH);
-  delay(10);
+  delay(50);
 
   //initing LOX3
   if(!distanceSensor3.lox.begin(distanceSensor3.loxAddress)) {
@@ -77,19 +79,28 @@ void Robot::setUpDistanceSensors(){
 
 }
 
+
 // Read all sensors (simplified)
 void Robot::readSensors() {
-  int cm;
-  Serial.print("1: ");
-  cm = distanceSensor1.readSensor();
-  distaceDB.uploadIntToDB(cm);
+  int left  = distanceSensor1.readSensor();
+  int front = distanceSensor2.readSensor();
+  int right = distanceSensor3.readSensor();
+  
+  walls_state.updateWalls(left, front, right);
 
-  Serial.print("2: ");
-  cm = distanceSensor2.readSensor();
-  distaceDB.uploadIntToDB(cm);
+  DBobject.uploadDistancesToDB(left, front, right);
 
-  Serial.print("3: ");
-  cm = distanceSensor3.readSensor();
-  distaceDB.uploadIntToDB(cm);
+  delay(50);
 }
+
+void Robot::checkForWall(){
+  walls_state.checkForWall();
+}
+
+
+
+
+
+
+
 

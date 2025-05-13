@@ -3,7 +3,9 @@
 
 
 
+
 Robot r2d2;
+
 
 
 void setup() {
@@ -21,8 +23,9 @@ void setup() {
 void loop() {
 
 
-  delay(1000);
+  
 
   r2d2.readSensors();
+  r2d2.checkForWall();
 
 }

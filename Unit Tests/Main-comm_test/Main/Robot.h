@@ -3,13 +3,15 @@
 
 #include "DistanceSensor.h"
 #include "DBdistanceSensor.h"
+#include "Wall.h"
 
 class Robot {
 private:
     DistanceSensor distanceSensor1;
     DistanceSensor distanceSensor2;
     DistanceSensor distanceSensor3;
-    DB distaceDB;
+    DB DBobject;
+    Wall walls_state;
 
     void setUpDistanceSensors();
 
@@ -24,6 +26,8 @@ public:
     void displaySensorValues();
     void beginForDB();
     long getDistance();
+    void checkForWall();
+  
     
 };
 

@@ -11,15 +11,11 @@ int DistanceSensor::readSensor(){
 
   // print sensor  reading
   if(measure.RangeStatus != 4) {     // if not out of range
-    sensor = measure.RangeMilliMeter/10;    
-    Serial.print(sensor);
-    Serial.print("cm");  
+    sensor = measure.RangeMilliMeter/10;     
     return sensor;  
   } else {
-    Serial.print("Out of range");
     return -1;
   }
-  Serial.println();
 
 }
 
