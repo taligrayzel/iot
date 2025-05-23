@@ -7,9 +7,9 @@
 Robot::Robot()
     : motor1(IN_A_1, IN_A_2, ENC_A_1, ENC_A_2,PWM_A_1,PWM_A_2,GEAR_RATIO,TPR),
       motor2(IN_B_1, IN_B_2, ENC_B_1, ENC_B_2,PWM_B_1,PWM_B_2,GEAR_RATIO,TPR),
-      leftDistanceSensor(LOX1_ADDRESS, SHT_LOX1),
+      leftDistanceSensor(LOX3_ADDRESS, SHT_LOX3),
       frontDistanceSensor(LOX2_ADDRESS, SHT_LOX2),
-      rightDistanceSensor(LOX3_ADDRESS, SHT_LOX3),
+      rightDistanceSensor(LOX1_ADDRESS, SHT_LOX1),
       distanceDB()
       {
 
@@ -156,17 +156,18 @@ void Robot::followLeft()
   float fronttDist = frontDistanceSensor.readSensor();
   float rightDist = rightDistanceSensor.readSensor();
   //distaceDB.uploadDistancesToDB(leftDist, fronttDist, rightDist);
-  float error= 500 - leftDist;
+  float error= 150 - leftDist;
+  Serial.println(leftDist);
   distanceDB.debugPrintToDB( error );
   if(fronttDist > FRONT_LIMIT)
   {
     float pid = 2*error;
-    if(error > 250)
+    if(error > 80)
     {
       distanceDB.debugPrintToDB( "to close left wall" );
       pid = 40;
     }
-    if(error < -250)
+    if(error < -80)
     {
       distanceDB.debugPrintToDB( "to close right wall" );
       pid = -40;
