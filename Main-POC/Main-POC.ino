@@ -1,11 +1,15 @@
 #include "Robot.h"
 #include "Config.h"
 
-
+// #include <AsyncTCP.h>
+// #include <ESPAsyncWebServer.h>
+// #include <WebSerial.h>
 
 Robot r2d2;
+AsyncWebServer server(80);
+
 int slowTestCounter = 10;
- int test_result = 0;
+int test_result = 0;
 
 unsigned long startTime = millis();
 
@@ -18,6 +22,8 @@ void setup() {
   delay(1000);
 
   r2d2.beginForSensorsSetup();
+  r2d2.connectToWifi();
+  r2d2.connectIPForDebug(server);
   r2d2.beginForDB();
   //attachAllEncoderInterrupts();
   //r2d2.startMovement(3600,3600);
@@ -35,6 +41,8 @@ void loop() {
   // delay(1000);
   // r2d2.stopMovement();
   delay(10);
+  //WebSerial.println("Hello!");
+  r2d2.moveForward();
 
   //r2d2.turnLeft();
 

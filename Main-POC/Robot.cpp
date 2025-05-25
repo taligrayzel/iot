@@ -15,11 +15,49 @@ Robot::Robot()
 
 }
 
-// // Move forward by controlling both motors
-// void Robot::moveForward() {
-//     motor1.forward(240);
-//     motor2.forward(200);
-// }
+void Robot::connectToWifi()
+{
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.printf("WiFi Failed!\n");
+    return;
+  }
+  Serial.println("CONNECTET TO WIFI");
+}
+
+
+void recvMsg(uint8_t *data, size_t len){
+  WebSerial.println("Received Data...");
+  String d = "";
+  for(int i=0; i < len; i++){
+    d += char(data[i]);
+  }
+  WebSerial.println(d);
+  // if (d == "ON"){
+  //   digitalWrite(LED, HIGH);
+  // }
+  // if (d=="OFF"){
+  //   digitalWrite(LED, LOW);
+  // }
+}
+
+void Robot::connectIPForDebug(AsyncWebServer &server)
+{
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+  // WebSerial is accessible at "<IP Address>/webserial" in browser
+  WebSerial.begin(&server);
+  WebSerial.onMessage(recvMsg);
+  server.begin();
+}
+
+// Move forward by controlling both motors
+void Robot::moveForward() {
+  WebSerial.println("moving forward");
+  motor1.forward(200);
+  motor2.forward(200);
+}
 
 // // Move backward by controlling both motors
 // void Robot::moveBackward() {

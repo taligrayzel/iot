@@ -4,9 +4,9 @@
 DB::DB(){}
 
 void DB::connectToDB(){
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) delay(200);
-  Serial.println("connected to WIFI");
+  // WiFi.begin(WIFI_SSID, WIFI_PASS);
+  // while (WiFi.status() != WL_CONNECTED) delay(200);
+  // Serial.println("connected to WIFI");
 
   config.database_url = DB_URL;
   config.signer.tokens.legacy_token = DB_SECRET;

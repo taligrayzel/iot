@@ -5,6 +5,10 @@
 #include "DistanceSensor.h"
 #include "DBdistanceSensor.h"
 
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <WebSerial.h>
+
 class Robot {
 private:
     Motor motor1; //right
@@ -21,7 +25,9 @@ public:
     
     void debugDB(string x);
     void correctRobotToMiddle(float left_speed ,float right_speed);
-    //void moveForward();
+    void connectToWifi();
+    void connectIPForDebug(AsyncWebServer &server);
+    void moveForward();
     //void moveBackward();
     void stopMovement();
     //void clearMovementData();
