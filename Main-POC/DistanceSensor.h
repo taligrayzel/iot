@@ -5,6 +5,16 @@
 #include <Wire.h>
 #include <Adafruit_VL53L0X.h>
 
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <WebSerial.h>
+
+#include <sstream>
+#include <string>
+
+#include <cstdio>   // snprintf
+#include <cstdlib>  // size_t
+
 class DistanceSensor {
 public:
     uint8_t loxAddress;

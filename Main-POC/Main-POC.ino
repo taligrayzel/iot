@@ -42,12 +42,13 @@ void loop() {
   // r2d2.stopMovement();
   delay(10);
   //WebSerial.println("Hello!");
-  r2d2.moveForward();
+ // r2d2.moveForward();
 
   //r2d2.turnLeft();
 
   //r2d2.readSensors();
-  r2d2.followLeft();
+  //r2d2.followLeft();
+  r2d2.forwardDebug();
   //r2d2.debugDB("helooooo debug");
 
 

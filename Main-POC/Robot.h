@@ -5,9 +5,7 @@
 #include "DistanceSensor.h"
 #include "DBdistanceSensor.h"
 
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <WebSerial.h>
+
 
 class Robot {
 private:
@@ -24,6 +22,7 @@ public:
     Robot();  // Default constructor
     
     void debugDB(string x);
+    void forwardDebug();
     void correctRobotToMiddle(float left_speed ,float right_speed);
     void connectToWifi();
     void connectIPForDebug(AsyncWebServer &server);

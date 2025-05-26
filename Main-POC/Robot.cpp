@@ -232,6 +232,17 @@ void Robot::followLeft()
   }
 }
 
+void Robot::forwardDebug()
+{
+  float leftDist = leftDistanceSensor.readSensor();
+  float fronttDist = frontDistanceSensor.readSensor();
+  float rightDist = rightDistanceSensor.readSensor();
+  WebSerial.println();
+  //moveForward();
+
+  
+}
+
 
 
 // // Display sensor values to the serial monitor
