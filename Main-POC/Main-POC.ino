@@ -25,7 +25,7 @@ void setup() {
   r2d2.connectToWifi();
   r2d2.connectIPForDebug(server);
   r2d2.beginForDB();
-  //attachAllEncoderInterrupts();
+  attachAllEncoderInterrupts();
   //r2d2.startMovement(3600,3600);
   //Serial.println("TARGET:,POS:,TIME:");
   Serial.println("finish setup");

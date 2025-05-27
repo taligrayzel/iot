@@ -1,6 +1,24 @@
 #pragma once
 #include <Arduino.h>
 
+#include "MotorConfig.h"
+#include "PIDController.h"
+
+struct EncoderHistory{
+  unsigned long timestamp;
+  int8_t dir;
+  uint8_t pwm;   
+};
+
+
+// Enum to define the drive modes of the motor
+enum class DriveMode {
+    IDLE,          // Motor is idle, not doing anything
+    POSITION_DRIVE, // Motor is controlling position (e.g., degrees)
+    VELOCITY_DRIVE // Motor is controlling velocity (e.g., RPM)
+};
+
+
 void attachAllEncoderInterrupts();
 
 class Motor {
@@ -16,36 +34,87 @@ public:
    * @param gearR Gear ratio
    * @param tpr Encoder tick per revolution
    */
-  Motor(int in1, int in2, int enc1, int enc2, int pwmChannel1, int pwmChannel2, int gearR, int tpr);
+  Motor(int in1, int in2, int enc1, int enc2, int pwmChannel1, int pwmChannel2, int gearR, float tpr);
 
-  // Motor controls
-  void forward(int speed = 255);  // speed: 0–255
-  void reverse(int speed = 255);
+  // Motor control functions
   void stop();
+  void move(bool dir, int speed = 255);
 
-  // Encoder handling
-  void updateEncoder();
-  void updateMovement();
+  // Encoder handling functions
+  void updateEncoder();  // Handle encoder updates
+
+  void setPositionTarget(float targetPosition);
+  void setSpeedTarget(float normalizedTargetRPM);
+
+  // RPM calculation and control
+  double getSmoothedRPM(unsigned long timeWindowUs = DEFAULT_SPEED_FRAME);
+  float getCurrentMaxRpm();
+
+  // Interrupt and timeout handling
+  void speedTimeOutInterrupt();  // Handle timeout due to low speed
+
+  void clearHistory();
+
+  // Speed control adjustments
+  void updateNoSpeed(uint8_t newNoSpeed);  // Update noSpeed value
+
+  // Getter for position in degrees
   double get_deg();
-  void set_movement(double target);
-  void clear_movement();
+
+  // Debugging and testing
   void printMock();
+  void tick();  // Handle updates to motor control in the current mode
+
+  // Jump start handling
+  void enableJumpStart();  // Enable jump start mode
+  void disableJumpStart(); // Disable jump start mode
+  bool getJumpStart();     // Check if jump start is enabled
 
 private:
+  // Reset control states
+  void clearPositionControl();   // Reset position control
+  void clearSpeedControl();      // Reset speed control
+  void forward(int speed = 255);  // speed: 0–255
+  void reverse(int speed = 255);
+
+  // Control updates
+  void updatePositionControl(float dt);
+  void updateSpeedControl(float dt);
+  // Helper function for movement
+
+  // Motor pins and parameters
   int in1, in2;              // Motor driver control pins
   int enc1, enc2;            // Encoder pins
-  int gearR, tpr;                 // Gear ratio (for degrees)
+  int gearR;
+  float tpr;                 // Gear ratio (for degrees)
   int pwmChannel1, pwmChannel2; // PWM channels
-  volatile long encoderValue;   // Optional use for more precise tracking
+
+  // PID Controllers for position and speed
+  PIDController positionPid;
+  PIDController speedPid;
+
+  // Speed thresholds
+  int lowSpeed;
+  int noSpeed;
+
+  bool jumpStart;  // Flag for jump start mode
+
+  // Encoder state tracking
+  volatile long encoderValue;
   volatile long lastEncoded;
-  volatile int8_t encoder_mock[16];
+  volatile size_t encoderHistoryPointer;
+  volatile EncoderHistory encoderHistory[16];
+  double mock_state[16];
 
-  // movement params
-  double target, pos; 
-  float kp, kd, ki;
-  long prevT;
-  float eprev;
-  float eintegral;
+  // Movement parameters
+  float currentMaxRpm;
+  uint8_t pwm;
 
+  // Current motor drive mode (Position or Velocity control)
+  DriveMode currentDriveMode = DriveMode::IDLE;  // Default is IDLE mode
+  float targetRPM = 0.0f;  // Target RPM (for VELOCITY_DRIVE)
+  float targetPosition = 0.0f;  // Target Position (for POSITION_DRIVE)
+
+  // Mutex for encoder state protection
   portMUX_TYPE encoderMutex;
 };

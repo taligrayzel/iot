@@ -56,8 +56,12 @@ void Robot::connectIPForDebug(AsyncWebServer &server)
 // Move forward by controlling both motors
 void Robot::moveForward() {
   WebSerial.println("moving forward");
-  motor1.forward(200);
-  motor2.forward(200);
+  //motor1.forward(200);
+  //motor1.clearHistory();
+  motor1.setSpeedTarget(0.8);
+  //motor2.forward(200);
+  //motor2.clearHistory();
+  motor2.setSpeedTarget(0.8);
 }
 
 // // Move backward by controlling both motors
@@ -74,14 +78,22 @@ void Robot::stopMovement() {
 
 // Turn the robot left
 void Robot::turnLeft() {
-  motor1.forward();
-  motor2.reverse();
+  //motor1.forward();
+  //motor1.clearHistory();
+  motor1.setSpeedTarget(0.8);
+  //motor2.reverse();
+  //motor2.clearHistory();
+  motor2.setSpeedTarget(-0.8);
 }
 
 // Turn the robot right
 void Robot::turnRight() {
-  motor1.reverse();
-  motor2.forward();
+  //motor1.reverse();
+  //motor1.clearHistory();
+  motor1.setSpeedTarget(-0.8);
+  //motor2.forward();
+  //motor2.clearHistory();
+  motor2.setSpeedTarget(0.8);
 }
 
 
@@ -186,12 +198,21 @@ void Robot::readSensors() {
 void Robot::correctRobotToMiddle(float left_speed ,float right_speed)
 {
   WebSerial.println("correcting to middle ");
-  motor1.forward(right_speed);
-  motor2.forward(left_speed);
+  //motor1.forward(right_speed);
+  //motor1.clearHistory();
+  motor1.setSpeedTarget(right_speed/255);
+  Serial.println(motor1.getSmoothedRPM());
+  //motor2.forward(left_speed);
+  //motor2.clearHistory();
+  motor2.setSpeedTarget(left_speed/255);
+  Serial.println(motor2.getSmoothedRPM());
 }
 
 void Robot::followLeft()
 {
+  motor1.tick();
+  motor2.tick();
+
   float leftDist = leftDistanceSensor.readSensor();
   float fronttDist = frontDistanceSensor.readSensor();
   float rightDist = rightDistanceSensor.readSensor();
@@ -202,16 +223,7 @@ void Robot::followLeft()
   if(fronttDist > FRONT_LIMIT)
   {
     float pid = 2*error;
-    // if(pid > 40)
-    // {
-    //   WebSerial.println( "too big error >20" );
-    //   pid = 80;
-    // }
-    // if(pid < -40)
-    // {
-    //   WebSerial.println( "too big error <-20" );
-    //   pid = -80;
-    // }
+    
 
     if(error > 40)
     {
@@ -232,7 +244,7 @@ void Robot::followLeft()
   else
   {
     stopMovement();
-    delay(1000);
+    delay(300);
 
     if(rightDist > leftDist)
     {
