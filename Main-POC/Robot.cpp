@@ -3,6 +3,7 @@
 
 #define FRONT_LIMIT 200
 
+
 // Constructor to initialize motors and distance sensor
 Robot::Robot()
     : motor1(IN_A_1, IN_A_2, ENC_A_1, ENC_A_2,PWM_A_1,PWM_A_2,GEAR_RATIO,TPR),
@@ -184,6 +185,7 @@ void Robot::readSensors() {
 
 void Robot::correctRobotToMiddle(float left_speed ,float right_speed)
 {
+  WebSerial.println("correcting to middle ");
   motor1.forward(right_speed);
   motor2.forward(left_speed);
 }
@@ -195,19 +197,30 @@ void Robot::followLeft()
   float rightDist = rightDistanceSensor.readSensor();
   //distaceDB.uploadDistancesToDB(leftDist, fronttDist, rightDist);
   float error= 150 - leftDist;
-  Serial.println(leftDist);
-  distanceDB.debugPrintToDB( error );
+  //Serial.println(leftDist);
+  //distanceDB.debugPrintToDB( error );
   if(fronttDist > FRONT_LIMIT)
   {
     float pid = 2*error;
-    if(error > 80)
+    // if(pid > 40)
+    // {
+    //   WebSerial.println( "too big error >20" );
+    //   pid = 80;
+    // }
+    // if(pid < -40)
+    // {
+    //   WebSerial.println( "too big error <-20" );
+    //   pid = -80;
+    // }
+
+    if(error > 40)
     {
-      distanceDB.debugPrintToDB( "to close left wall" );
+      WebSerial.println( "to close left wall" );
       pid = 40;
     }
-    if(error < -80)
+    if(error < -40)
     {
-      distanceDB.debugPrintToDB( "to close right wall" );
+      WebSerial.println( "to close right wall" );
       pid = -40;
     }
     float left_speed = 210+ pid;
@@ -232,12 +245,69 @@ void Robot::followLeft()
   }
 }
 
+// void Robot::followLeftandRight()
+// {
+//   float leftDist = leftDistanceSensor.readSensor();
+//   float fronttDist = frontDistanceSensor.readSensor();
+//   float rightDist = rightDistanceSensor.readSensor();
+//   //distaceDB.uploadDistancesToDB(leftDist, fronttDist, rightDist);
+//   float error= 150 - leftDist;
+//   float errorR= 150 - rightDist;
+
+//   if (error +errorR > 30)
+//   {
+
+//   }
+//   //Serial.println(leftDist);
+//   //distanceDB.debugPrintToDB( error );
+//   if(fronttDist > FRONT_LIMIT)
+//   {
+//     float pid = 2*error;
+//     if(pid > 250)
+//     {
+//       pid = 250;
+//     }
+
+//     if(error > 80)
+//     {
+//       WebSerial.println( "to close left wall" );
+//       pid = 40;
+//     }
+//     if(error < -80)
+//     {
+//       WebSerial.println( "to close right wall" );
+//       pid = -40;
+//     }
+//     float left_speed = 210+ pid;
+//     float right_speed = 210- pid;
+
+//     correctRobotToMiddle(left_speed , right_speed);
+
+//   }
+//   else
+//   {
+//     stopMovement();
+//     delay(1000);
+
+//     if(rightDist > leftDist)
+//     {
+//       turnRight();
+//     }
+//     else
+//     {
+//       turnLeft();
+//     }
+//   }
+// }
+
+
 void Robot::forwardDebug()
 {
   float leftDist = leftDistanceSensor.readSensor();
-  float fronttDist = frontDistanceSensor.readSensor();
+  float frontDist = frontDistanceSensor.readSensor();
   float rightDist = rightDistanceSensor.readSensor();
-  WebSerial.println();
+  Serial.println(frontDist);
+  //WebSerial.println();
   //moveForward();
 
   

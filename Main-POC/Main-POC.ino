@@ -46,10 +46,10 @@ void loop() {
 
   //r2d2.turnLeft();
 
-  //r2d2.readSensors();
-  //r2d2.followLeft();
-  r2d2.forwardDebug();
-  //r2d2.debugDB("helooooo debug");
+  
+  r2d2.followLeft();
+  // r2d2.forwardDebug();
+  //rd2d.followLeftandRight();
 
 
   // if(slowTestCounter > 0){
