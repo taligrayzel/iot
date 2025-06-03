@@ -37,19 +37,19 @@
 
 
 // Motor A Pin Configuration (Hardware-Specific)
-#define IN_A_1 14
-#define IN_A_2 12
-#define ENC_A_1 35
-#define ENC_A_2 34
+#define IN_A_1 12
+#define IN_A_2 14
+#define ENC_A_1 34
+#define ENC_A_2 35
 #define PWM_A_1 0
 #define PWM_A_2 1
 
 
 // Motor B Pin Configuration (Hardware-Specific)
-#define IN_B_1 19
-#define IN_B_2 18
-#define ENC_B_1 33
-#define ENC_B_2 32
+#define IN_B_1 18
+#define IN_B_2 19
+#define ENC_B_1 32
+#define ENC_B_2 33
 #define PWM_B_1 2
 #define PWM_B_2 3
 
