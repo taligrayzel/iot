@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maze Solver</title>
+    <style>
+        input[type="text"] {
+            width: 50px;
+            text-align: center;
+        }
+        .grid-row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Create a 3×3 Maze</h2>
+
+    <form id="mazeForm">
+        <div id="mazeGrid"></div>
+
+        <label>Start Position (row,col): <input type="text" id="start" placeholder="e.g. 0,0"></label><br><br>
+        <label>End Position (row,col): <input type="text" id="end" placeholder="e.g. 2,2"></label><br><br>
+
+        <button type="submit">Solve</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        // Generate 3x3 grid of input boxes
+        const gridDiv = document.getElementById("mazeGrid");
+        for (let i = 0; i < 3; i++) {
+            const rowDiv = document.createElement("div");
+            rowDiv.classList.add("grid-row");
+            for (let j = 0; j < 3; j++) {
+                const input = document.createElement("input");
+                input.type = "text";
+                input.maxLength = 4;
+                input.placeholder = "UDRL/X";
+                input.id = `cell-${i}-${j}`;
+                rowDiv.appendChild(input);
+            }
+            gridDiv.appendChild(rowDiv);
+        }
+
+        document.getElementById("mazeForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const mazeGrid = [];
+            for (let i = 0; i < 3; i++) {
+                const row = [];
+                for (let j = 0; j < 3; j++) {
+                    const val = document.getElementById(`cell-${i}-${j}`).value.toUpperCase() || "X";
+                    row.push(val);
+                }
+                mazeGrid.push(row);
+            }
+
+            const start = document.getElementById("start").value.split(",").map(Number);
+            const end = document.getElementById("end").value.split(",").map(Number);
+
+            const response = await fetch("/solve", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    maze_grid: mazeGrid,
+                    start: start,
+                    end: end
+                })
+            });
+
+            const data = await response.json();
+            const resultDiv = document.getElementById("result");
+
+            if (data.status === "ok") {
+                resultDiv.innerHTML = `
+                    <h3>Solution Path:</h3>
+                    <pre>${JSON.stringify(data.path, null, 2)}</pre>
+                    <h3>Directions:</h3>
+                    <pre>${data.directions.join(" → ")}</pre>
+                `;
+            } else {
+                resultDiv.innerHTML = `<p><strong>${data.message}</strong></p>`;
+            }
+        });
+    </script>
+</body>
+</html>
