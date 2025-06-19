@@ -3,86 +3,157 @@
 <head>
     <title>Maze Solver</title>
     <style>
-        input[type="text"] {
-            width: 50px;
-            text-align: center;
+        body {
+            font-family: sans-serif;
         }
+
+        .maze-cell {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            margin: 2px;
+            box-sizing: border-box;
+        }
+
+        .maze-cell .wall {
+            position: absolute;
+            background-color: lightgreen; /* ✅ Default: open */
+        }
+
+        .wall.top { top: 0; left: 0; width: 100%; height: 5px; cursor: pointer; }
+        .wall.bottom { bottom: 0; left: 0; width: 100%; height: 5px; cursor: pointer; }
+        .wall.left { top: 0; left: 0; width: 5px; height: 100%; cursor: pointer; }
+        .wall.right { top: 0; right: 0; width: 5px; height: 100%; cursor: pointer; }
+
+        .wall.blocked {
+            background-color: gray;  /* ✅ Clicked: becomes blocked */
+        }
+
         .grid-row {
+            margin-bottom: 5px;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="text"] {
+            width: 80px;
             margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <h2>Create a 3×3 Maze</h2>
 
-    <form id="mazeForm">
-        <div id="mazeGrid"></div>
+<h2>Draw Maze Walls</h2>
+<p>Click the walls to <strong>add blocks</strong>. Green = open, Gray = blocked.</p>
 
-        <label>Start Position (row,col): <input type="text" id="start" placeholder="e.g. 0,0"></label><br><br>
-        <label>End Position (row,col): <input type="text" id="end" placeholder="e.g. 2,2"></label><br><br>
+<form id="mazeForm">
+    <div id="mazeGrid"></div>
 
-        <button type="submit">Solve</button>
-    </form>
+    <br><br>
+    <label>Start Position (row,col): <input type="text" id="start" placeholder="e.g. 0,0"></label><br>
+    <label>End Position (row,col): <input type="text" id="end" placeholder="e.g. 2,2"></label><br><br>
 
-    <div id="result"></div>
+    <button type="submit">Solve</button>
+</form>
 
-    <script>
-        // Generate 3x3 grid of input boxes
-        const gridDiv = document.getElementById("mazeGrid");
-        for (let i = 0; i < 3; i++) {
-            const rowDiv = document.createElement("div");
-            rowDiv.classList.add("grid-row");
-            for (let j = 0; j < 3; j++) {
-                const input = document.createElement("input");
-                input.type = "text";
-                input.maxLength = 4;
-                input.placeholder = "UDRL/X";
-                input.id = `cell-${i}-${j}`;
-                rowDiv.appendChild(input);
-            }
-            gridDiv.appendChild(rowDiv);
-        }
+<div id="result"></div>
 
-        document.getElementById("mazeForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+<script>
+    const gridSize = 3;
+    const gridDiv = document.getElementById("mazeGrid");
 
-            const mazeGrid = [];
-            for (let i = 0; i < 3; i++) {
-                const row = [];
-                for (let j = 0; j < 3; j++) {
-                    const val = document.getElementById(`cell-${i}-${j}`).value.toUpperCase() || "X";
-                    row.push(val);
-                }
-                mazeGrid.push(row);
-            }
+    for (let i = 0; i < gridSize; i++) {
+        const rowDiv = document.createElement("div");
+        rowDiv.classList.add("grid-row");
+        for (let j = 0; j < gridSize; j++) {
+            const cell = document.createElement("div");
+            cell.classList.add("maze-cell");
+            cell.dataset.row = i;
+            cell.dataset.col = j;
 
-            const start = document.getElementById("start").value.split(",").map(Number);
-            const end = document.getElementById("end").value.split(",").map(Number);
+            // Add clickable walls
+            ["top", "bottom", "left", "right"].forEach(dir => {
+                const wall = document.createElement("div");
+                wall.classList.add("wall", dir);
 
-            const response = await fetch("/solve", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    maze_grid: mazeGrid,
-                    start: start,
-                    end: end
-                })
+                wall.addEventListener("click", () => {
+                    wall.classList.toggle("blocked");
+
+                    const dRow = { top: -1, bottom: 1, left: 0, right: 0 };
+                    const dCol = { top: 0, bottom: 0, left: -1, right: 1 };
+                    const opposite = { top: "bottom", bottom: "top", left: "right", right: "left" };
+
+                    const ni = i + dRow[dir];
+                    const nj = j + dCol[dir];
+
+                    if (ni >= 0 && ni < gridSize && nj >= 0 && nj < gridSize) {
+                        const neighbor = document.querySelector(`.maze-cell[data-row="${ni}"][data-col="${nj}"]`);
+                        const neighborWall = neighbor.querySelector(`.wall.${opposite[dir]}`);
+                        neighborWall.classList.toggle("blocked");
+                    }
+                });
+
+                cell.appendChild(wall);
             });
 
-            const data = await response.json();
-            const resultDiv = document.getElementById("result");
+            rowDiv.appendChild(cell);
+        }
+        gridDiv.appendChild(rowDiv);
+    }
 
-            if (data.status === "ok") {
-                resultDiv.innerHTML = `
-                    <h3>Solution Path:</h3>
-                    <pre>${JSON.stringify(data.path, null, 2)}</pre>
-                    <h3>Directions:</h3>
-                    <pre>${data.directions.join(" → ")}</pre>
-                `;
-            } else {
-                resultDiv.innerHTML = `<p><strong>${data.message}</strong></p>`;
+    document.getElementById("mazeForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const mazeGrid = [];
+        for (let i = 0; i < gridSize; i++) {
+            const row = [];
+            for (let j = 0; j < gridSize; j++) {
+                const cell = document.querySelector(`.maze-cell[data-row="${i}"][data-col="${j}"]`);
+                let directions = "";
+                if (!cell.querySelector(".top").classList.contains("blocked")) directions += "U";
+                if (!cell.querySelector(".bottom").classList.contains("blocked")) directions += "D";
+                if (!cell.querySelector(".left").classList.contains("blocked")) directions += "L";
+                if (!cell.querySelector(".right").classList.contains("blocked")) directions += "R";
+                if (directions === "") directions = "X";
+                row.push(directions);
             }
+            mazeGrid.push(row);
+        }
+
+        const start = document.getElementById("start").value.split(",").map(Number);
+        const end = document.getElementById("end").value.split(",").map(Number);
+
+        const response = await fetch("/solve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                maze_grid: mazeGrid,
+                start: start,
+                end: end
+            })
         });
-    </script>
+
+        const data = await response.json();
+        const resultDiv = document.getElementById("result");
+
+        if (data.status === "ok") {
+            resultDiv.innerHTML = `
+                <h3>Solution Path:</h3>
+                <pre>${JSON.stringify(data.path, null, 2)}</pre>
+                <h3>Directions:</h3>
+                <pre>${data.directions.join(" → ")}</pre>
+            `;
+        } else {
+            resultDiv.innerHTML = `<p><strong>${data.message}</strong></p>`;
+        }
+    });
+</script>
+
 </body>
 </html>
