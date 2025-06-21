@@ -2,7 +2,7 @@ from logic.maze import Maze
 from logic.maze_solver import MazeSolver
 
 def create_maze(maze_grid, start_pos, end_pos):
-    maze = Maze(3)
+    maze = Maze(10)
     
     # print("Create your maze (3x3):")
     # print("For each cell, specify which directions are open (no walls):")
@@ -15,8 +15,8 @@ def create_maze(maze_grid, start_pos, end_pos):
     # print("Enter 'X' for a completely blocked cell")
     # print("\nEnter the maze row by row (3 cells per row):")
     
-    for i in range(3):
-        for j in range(3):
+    for i in range(10):
+        for j in range(10):
             while True:
                 # cell = input(f"Cell ({i+1},{j+1}) directions (e.g., UDRL or X): ").strip().upper()
                 cell = maze_grid[i][j].upper()
@@ -109,8 +109,8 @@ def main():
     # Display the maze
     print("\nYour maze:")
     maze.display()
-    for i in range(3):
-        for j in range(3):
+    for i in range(10):
+        for j in range(10):
             if maze.get_square(i, j).regular:
                 print(f"Regular square: ({i+1}, {j+1})")
     
