@@ -155,11 +155,11 @@
   <div class="container">
     <h2>Draw Maze Walls</h2>
     <p>Click the walls to <strong>add blocks</strong>. Green = open, Gray = blocked.</p>
+    <p>The default start point of the robot is (1,1)</p>
 
     <form id="mazeForm">
       <div id="mazeGrid"></div>
 
-      <label>Start Position (row,col): <input type="text" id="start" placeholder="e.g. 1,1" /></label>
       <label>End Position (row,col): <input type="text" id="end" placeholder="e.g. 3,3" /></label>
 
       <button type="submit">Solve</button>
@@ -191,7 +191,9 @@
             (dir === "top" && i === 0) ||
             (dir === "bottom" && i === gridSize - 1) ||
             (dir === "left" && j === 0) ||
-            (dir === "right" && j === gridSize - 1)
+            (dir === "right" && j === gridSize - 1)||
+            (i === 0 && j === 0 && dir === "right")||
+            (i === 0 && j === 1 && dir === "left")
           ) {
             wall.classList.add("blocked", "locked");
           }
@@ -219,6 +221,10 @@
           cell.appendChild(wall);
         });
 
+        if (i === 0 && j === 0) {
+          cell.classList.add("start-cell");  // highlight (1,1) as start
+        }
+
         rowDiv.appendChild(cell);
       }
 
@@ -244,7 +250,7 @@
         mazeGrid.push(row);
       }
 
-      const start = document.getElementById("start").value.split(",").map(Number);
+      const start = [1,1];
       const end = document.getElementById("end").value.split(",").map(Number);
 
       // Clear previous highlights
