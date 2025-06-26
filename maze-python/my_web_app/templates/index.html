@@ -50,12 +50,12 @@
 
     .wall {
       position: absolute;
-      background-color: lightgreen;
+      background-color: #444;
       transition: background-color 0.2s ease;
     }
 
-    .wall.blocked {
-      background-color: #444;
+    .wall:not(.blocked) {
+      background-color: lightgreen;
     }
 
     .wall.locked {
@@ -121,7 +121,7 @@
     }
 
     .path-cell {
-        background-color: #fff9c4 !important; /* soft yellow */
+        background-color: #fff9c4 !important;
     }
 
     button {
@@ -154,8 +154,10 @@
 <body>
   <div class="container">
     <h2>Draw Maze Walls</h2>
-    <p>Click the walls to <strong>add blocks</strong>. Green = open, Gray = blocked.</p>
+    <p>Click or drag to <strong>open</strong> walls. Everything starts blocked (gray).</p>
+    <p>Right click or drag to <strong>close</strong> walls.</p>
     <p>The default start point of the robot is (1,1)</p>
+    
 
     <form id="mazeForm">
       <div id="mazeGrid"></div>
@@ -169,6 +171,18 @@
   </div>
   
   <script>
+    let mouseDown = false;
+    let mouseButton = 0;
+
+    document.body.addEventListener("mousedown", (e) => {
+      mouseDown = true;
+      mouseButton = e.button;
+    });
+
+    document.body.addEventListener("mouseup", () => {
+      mouseDown = false;
+    });
+
     const gridSize = 10;
     const gridDiv = document.getElementById("mazeGrid");
 
@@ -184,25 +198,22 @@
 
         ["top", "bottom", "left", "right"].forEach((dir) => {
           const wall = document.createElement("div");
-          wall.classList.add("wall", dir);
+          wall.classList.add("wall", dir, "blocked");
 
-          // Block and lock outer edges
           if (
             (dir === "top" && i === 0) ||
             (dir === "bottom" && i === gridSize - 1) ||
             (dir === "left" && j === 0) ||
-            (dir === "right" && j === gridSize - 1)||
-            (i === 0 && j === 0 && dir === "right")||
+            (dir === "right" && j === gridSize - 1) ||
+            (i === 0 && j === 0 && dir === "right") ||
             (i === 0 && j === 1 && dir === "left")
           ) {
-            wall.classList.add("blocked", "locked");
+            wall.classList.add("locked");
           }
 
-          // Add toggle only if not locked
           if (!wall.classList.contains("locked")) {
-            wall.addEventListener("click", () => {
-              wall.classList.toggle("blocked");
-
+            const setWallState = (block) => {
+              wall.classList.toggle("blocked", block);
               const dRow = { top: -1, bottom: 1, left: 0, right: 0 };
               const dCol = { top: 0, bottom: 0, left: -1, right: 1 };
               const opposite = { top: "bottom", bottom: "top", left: "right", right: "left" };
@@ -213,7 +224,18 @@
               if (ni >= 0 && ni < gridSize && nj >= 0 && nj < gridSize) {
                 const neighbor = document.querySelector(`.maze-cell[data-row="${ni}"][data-col="${nj}"]`);
                 const neighborWall = neighbor.querySelector(`.wall.${opposite[dir]}`);
-                neighborWall.classList.toggle("blocked");
+                neighborWall.classList.toggle("blocked", block);
+              }
+            };
+
+            wall.addEventListener("mousedown", (e) => {
+              e.preventDefault();
+              setWallState(e.button !== 0); // left = open (false), right = block (true)
+            });
+
+            wall.addEventListener("mouseover", () => {
+              if (mouseDown) {
+                setWallState(mouseButton !== 0);
               }
             });
           }
@@ -222,7 +244,7 @@
         });
 
         if (i === 0 && j === 0) {
-          cell.classList.add("start-cell");  // highlight (1,1) as start
+          cell.classList.add("start-cell");
         }
 
         rowDiv.appendChild(cell);
@@ -253,13 +275,10 @@
       const start = [1,1];
       const end = document.getElementById("end").value.split(",").map(Number);
 
-      // Clear previous highlights
       document.querySelectorAll('.maze-cell').forEach(cell => {
         cell.classList.remove('start-cell', 'end-cell', 'path-cell');
       });
 
-
-      // Add new highlights
       const startCell = document.querySelector(`.maze-cell[data-row="${start[0]-1}"][data-col="${start[1]-1}"]`);
       const endCell = document.querySelector(`.maze-cell[data-row="${end[0]-1}"][data-col="${end[1]-1}"]`);
       if (startCell) startCell.classList.add("start-cell");
@@ -275,26 +294,23 @@
       const resultDiv = document.getElementById("result");
 
       if (data.status === "ok") {
-        resultDiv.innerHTML = `
-          <h3>Directions:</h3>
-          <pre>${data.directions.join(" → ")}</pre>
-        `;
-
+        resultDiv.innerHTML = `<h3>Directions:</h3><pre>${data.directions.join(" → ")}</pre>`;
         if (data.path) {
-            data.path.forEach(([row, col]) => {
-                const r = row - 1;
-                const c = col - 1;
-
-                // Skip start and end
-                if ((r === start[0] - 1 && c === start[1] - 1) || (r === end[0] - 1 && c === end[1] - 1)) return;
-
-                const cell = document.querySelector(`.maze-cell[data-row="${r}"][data-col="${c}"]`);
-                if (cell) cell.classList.add("path-cell");
-            });
+          data.path.forEach(([row, col]) => {
+            const r = row - 1;
+            const c = col - 1;
+            if ((r === start[0]-1 && c === start[1]-1) || (r === end[0]-1 && c === end[1]-1)) return;
+            const cell = document.querySelector(`.maze-cell[data-row="${r}"][data-col="${c}"]`);
+            if (cell) cell.classList.add("path-cell");
+          });
         }
       } else {
         resultDiv.innerHTML = `<p><strong>${data.message}</strong></p>`;
       }
+    });
+
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
     });
   </script>
 </body>
