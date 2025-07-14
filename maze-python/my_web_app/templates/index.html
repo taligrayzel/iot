@@ -107,6 +107,10 @@
       background-color: #ffe1ec !important;
     }
 
+    .path-cell {
+      background-color: #fff9c4 !important;
+    }
+
     label {
       display: block;
       margin-top: 10px;
@@ -118,10 +122,6 @@
       border-radius: 4px;
       border: 1px solid #ccc;
       width: 100px;
-    }
-
-    .path-cell {
-        background-color: #fff9c4 !important;
     }
 
     button {
@@ -149,27 +149,54 @@
       font-size: 1.1rem;
       color: #333;
     }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-clear {
+      background-color: #bbb;
+    }
+
+    .btn-clear:hover {
+      background-color: #999;
+    }
+
+    .btn-home {
+      background-color: #ddd;
+      color: #333;
+    }
+
+    .btn-home:hover {
+      background-color: #ccc;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <a href="/" class="btn-home" style="padding: 8px 16px; display: inline-block; font-weight: bold; border-radius: 6px; text-decoration: none;">← Back to Home</a>
     <h2>Draw Maze Walls</h2>
     <p>Click or drag to <strong>open</strong> walls. Everything starts blocked (gray).</p>
     <p>Right click or drag to <strong>close</strong> walls.</p>
     <p>The default start point of the robot is (1,1)</p>
-    
 
     <form id="mazeForm">
       <div id="mazeGrid"></div>
 
       <label>End Position (row,col): <input type="text" id="end" placeholder="e.g. 3,3" /></label>
 
-      <button type="submit">Solve</button>
+      <div class="actions">
+        <button type="submit">Solve</button>
+        <button type="button" class="btn-clear" onclick="clearMaze()">Clear Maze</button>
+      </div>
     </form>
 
     <div id="result"></div>
   </div>
-  
+
   <script>
     let mouseDown = false;
     let mouseButton = 0;
@@ -230,7 +257,7 @@
 
             wall.addEventListener("mousedown", (e) => {
               e.preventDefault();
-              setWallState(e.button !== 0); // left = open (false), right = block (true)
+              setWallState(e.button !== 0);
             });
 
             wall.addEventListener("mouseover", () => {
@@ -272,7 +299,7 @@
         mazeGrid.push(row);
       }
 
-      const start = [1,1];
+      const start = [1, 1];
       const end = document.getElementById("end").value.split(",").map(Number);
 
       document.querySelectorAll('.maze-cell').forEach(cell => {
@@ -295,6 +322,14 @@
 
       if (data.status === "ok") {
         resultDiv.innerHTML = `<h3>Directions:</h3><pre>${data.directions.join(" → ")}</pre>`;
+
+        // Save state
+        localStorage.setItem("maze_grid", JSON.stringify(mazeGrid));
+        localStorage.setItem("maze_start", JSON.stringify(start));
+        localStorage.setItem("maze_end", JSON.stringify(end));
+        localStorage.setItem("maze_path", JSON.stringify(data.path || []));
+        localStorage.setItem("maze_directions", JSON.stringify(data.directions || []));
+
         if (data.path) {
           data.path.forEach(([row, col]) => {
             const r = row - 1;
@@ -306,6 +341,58 @@
         }
       } else {
         resultDiv.innerHTML = `<p><strong>${data.message}</strong></p>`;
+      }
+    });
+
+    function clearMaze() {
+      localStorage.clear();
+      window.location.reload();
+    }
+
+    window.addEventListener("load", () => {
+      const savedGrid = JSON.parse(localStorage.getItem("maze_grid"));
+      const savedStart = JSON.parse(localStorage.getItem("maze_start"));
+      const savedEnd = JSON.parse(localStorage.getItem("maze_end"));
+      const savedPath = JSON.parse(localStorage.getItem("maze_path"));
+      const savedDirections = JSON.parse(localStorage.getItem("maze_directions"));
+
+      if (savedGrid && savedEnd) {
+        for (let i = 0; i < gridSize; i++) {
+          for (let j = 0; j < gridSize; j++) {
+            const cell = document.querySelector(`.maze-cell[data-row="${i}"][data-col="${j}"]`);
+            const directions = savedGrid[i][j];
+            if (directions === "X") continue;
+            if (!directions.includes("U")) cell.querySelector(".top").classList.add("blocked");
+            else cell.querySelector(".top").classList.remove("blocked");
+            if (!directions.includes("D")) cell.querySelector(".bottom").classList.add("blocked");
+            else cell.querySelector(".bottom").classList.remove("blocked");
+            if (!directions.includes("L")) cell.querySelector(".left").classList.add("blocked");
+            else cell.querySelector(".left").classList.remove("blocked");
+            if (!directions.includes("R")) cell.querySelector(".right").classList.add("blocked");
+            else cell.querySelector(".right").classList.remove("blocked");
+          }
+        }
+
+        const startCell = document.querySelector(`.maze-cell[data-row="${savedStart[0]-1}"][data-col="${savedStart[1]-1}"]`);
+        const endCell = document.querySelector(`.maze-cell[data-row="${savedEnd[0]-1}"][data-col="${savedEnd[1]-1}"]`);
+        if (startCell) startCell.classList.add("start-cell");
+        if (endCell) endCell.classList.add("end-cell");
+
+        if (savedPath) {
+          savedPath.forEach(([row, col]) => {
+            const r = row - 1;
+            const c = col - 1;
+            if ((r === savedStart[0]-1 && c === savedStart[1]-1) || (r === savedEnd[0]-1 && c === savedEnd[1]-1)) return;
+            const cell = document.querySelector(`.maze-cell[data-row="${r}"][data-col="${c}"]`);
+            if (cell) cell.classList.add("path-cell");
+          });
+        }
+
+        if (savedDirections && savedDirections.length) {
+          document.getElementById("result").innerHTML = `<h3>Directions:</h3><pre>${savedDirections.join(" → ")}</pre>`;
+        }
+
+        document.getElementById("end").value = savedEnd.join(",");
       }
     });
 
