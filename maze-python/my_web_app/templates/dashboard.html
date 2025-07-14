@@ -70,10 +70,19 @@
 </div>
   <h1>🤖 Live Robot Dashboard</h1>
 
-  <div class="section">
-    <h2>🛼 Path Visualization</h2>
-    <div id="pathPlot"></div>
+  <div class="section" style="display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start;">
+    <div style="flex: 0 0 35%; min-width: 250px;">
+      <h2>🧩 Maze Configuration</h2>
+      <div id="mazePreview"></div>
+    </div>
+  
+    <div style="flex: 1 1 65%; min-width: 300px;">
+      <h2>🛼 Path Visualization</h2>
+      <div id="pathPlot" style="height: 600px;"></div>
+    </div>
   </div>
+  
+  
   
   <div class="section">
     <h2>🚜 Motor Control</h2>
@@ -308,6 +317,67 @@
 
     refreshAll();
     setInterval(refreshAll, 1000);
+
+    async function renderMazePreview() {
+      const [gridRes, pathRes, startRes, endRes] = await Promise.all([
+        fetch('/api/maze_grid'),
+        fetch('/api/maze_path'),
+        fetch('/api/maze_start'),
+        fetch('/api/maze_end')
+      ]);
+      const grid = await gridRes.json();
+      const path = await pathRes.json();
+      const start = await startRes.json();  // e.g. [1, 1]
+      const end = await endRes.json();      // e.g. [4, 4]
+
+
+      if (!grid || !grid.length) {
+        document.getElementById("mazePreview").innerHTML = "<p>No maze grid data.</p>";
+        return;
+      }
+
+      const container = document.getElementById("mazePreview");
+      container.innerHTML = ""; // clear previous
+
+      const pathSet = new Set(path.map(([r, c]) => `${r - 1},${c - 1}`));
+      const startKey = start.length === 2 ? `${start[0]-1},${start[1]-1}` : null;
+      const endKey = end.length === 2 ? `${end[0]-1},${end[1]-1}` : null;
+
+
+      grid.forEach((row, i) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.style.display = "flex";
+
+        row.forEach((cell, j) => {
+          const div = document.createElement("div");
+          div.style.width = "30px";
+          div.style.height = "30px";
+          div.style.borderTop = cell.includes("U") ? "2px solid transparent" : "2px solid #000";
+          div.style.borderBottom = cell.includes("D") ? "2px solid transparent" : "2px solid #000";
+          div.style.borderLeft = cell.includes("L") ? "2px solid transparent" : "2px solid #000";
+          div.style.borderRight = cell.includes("R") ? "2px solid transparent" : "2px solid #000";
+          div.style.boxSizing = "border-box";
+          const key = `${i},${j}`;
+          if (key === startKey) {
+            div.style.background = "#d1f4f6"; // light blue
+          } else if (key === endKey) {
+            div.style.background = "#ffe1ec"; // light pink
+          } else if (pathSet.has(key)) {
+            div.style.background = "#ffeb3b"; // yellow
+          } else {
+            div.style.background = "#fdfdfd"; // default
+          }
+
+          rowDiv.appendChild(div);
+        });
+
+        container.appendChild(rowDiv);
+      });
+    }
+
+
+  renderMazePreview();
+
   </script>
 </body>
 </html>

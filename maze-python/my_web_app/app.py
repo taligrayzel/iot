@@ -37,15 +37,22 @@ def solve():
         end_pos=data["end"]
     )
     if result.get("status") == "ok":
-        send_to_firebase(result["directions"], data["start"], data["end"])
+        send_to_firebase(result["directions"], data["start"], data["end"], data["maze_grid"], result.get("path"))
     return jsonify(result)
 
-def send_to_firebase(directions, start, end):
+def send_to_firebase(directions, start, end, maze_grid=None, path=None):
     payload = {
         "directions": directions,
         "start": start,
-        "end": end
+        "end": end,
     }
+    if maze_grid:
+        payload["maze_grid"] = maze_grid
+
+    if path:
+        payload["path"] = path
+
+
     try:
         response = requests.put(
             f"{FIREBASE_URL}/solutions/latest.json?auth={FIREBASE_SECRET}", json=payload
@@ -86,6 +93,27 @@ def odometry():
 @app.route("/api/walls")
 def walls():
     return jsonify(fetch_firebase_node("logs/Walls"))
+
+@app.route("/api/maze_grid")
+def maze_grid():
+    latest = fetch_firebase_node("solutions/latest")
+    return jsonify(latest.get("maze_grid", []))
+
+@app.route("/api/maze_path")
+def maze_path():
+    latest = fetch_firebase_node("solutions/latest")
+    return jsonify(latest.get("path", []))
+
+@app.route("/api/maze_start")
+def maze_start():
+    latest = fetch_firebase_node("solutions/latest")
+    return jsonify(latest.get("start", []))
+
+@app.route("/api/maze_end")
+def maze_end():
+    latest = fetch_firebase_node("solutions/latest")
+    return jsonify(latest.get("end", []))
+
 
 
 
