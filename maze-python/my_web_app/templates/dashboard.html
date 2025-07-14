@@ -264,8 +264,9 @@
         parseAllSessions(raw, p => {
           const x = p[keyX] ?? p[keyX.toLowerCase()] ?? p[keyX.toUpperCase()];
           const y = p[keyY] ?? p[keyY.toLowerCase()] ?? p[keyY.toUpperCase()];
+          const time = p.time ?? "";
           if (!isNaN(x) && !isNaN(y)) {
-            pushTo.push({ x: +x, y: +y });
+            pushTo.push({ x: +x, y: +y, time });
           } else {
             console.warn(`❌ Invalid point for (${keyX}, ${keyY}):`, p);
           }
@@ -280,16 +281,45 @@
       const traces = [];
 
       if (path.length > 0) {
-        traces.push({ x: path.map(p => p.x), y: path.map(p => p.y), mode: 'lines+markers', name: 'Odometry' });
+        traces.push({
+          x: path.map(p => p.x),
+          y: path.map(p => p.y),
+          mode: 'lines+markers',
+          name: 'Odometry',
+          text: path.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
+          hoverinfo: 'text'
+        });
       }
       if (line.length > 0) {
-        traces.push({ x: line.map(p => p.x), y: line.map(p => p.y), mode: 'markers', name: 'Center Line', marker: { size: 6 } });
+        traces.push({
+          x: line.map(p => p.x),
+          y: line.map(p => p.y),
+          mode: 'markers',
+          name: 'Center Line',
+          marker: { size: 6 },
+          text: line.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
+          hoverinfo: 'text'
+        });
       }
       if (lWall.length > 0) {
-        traces.push({ x: lWall.map(p => p.x), y: lWall.map(p => p.y), mode: 'markers', name: 'Left Wall' });
+        traces.push({
+          x: lWall.map(p => p.x),
+          y: lWall.map(p => p.y),
+          mode: 'markers',
+          name: 'Left Wall',
+          text: lWall.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
+          hoverinfo: 'text'
+        });
       }
       if (rWall.length > 0) {
-        traces.push({ x: rWall.map(p => p.x), y: rWall.map(p => p.y), mode: 'markers', name: 'Right Wall' });
+        traces.push({
+          x: rWall.map(p => p.x),
+          y: rWall.map(p => p.y),
+          mode: 'markers',
+          name: 'Right Wall',
+          text: rWall.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
+          hoverinfo: 'text'
+        });
       }
 
       if (traces.length === 0) {
@@ -299,11 +329,12 @@
         Plotly.newPlot('pathPlot', traces, {
           margin: { t: 10 },
           xaxis: { title: 'X', scaleanchor: 'y' },
-          yaxis: { title: 'Y' }
+          yaxis: { title: 'Y' },
+          hovermode: 'closest'  // 👈 this makes hover work per dot!
         });
       }
-    }
 
+    }
 
 
     function refreshAll() {
