@@ -265,8 +265,9 @@
           const x = p[keyX] ?? p[keyX.toLowerCase()] ?? p[keyX.toUpperCase()];
           const y = p[keyY] ?? p[keyY.toLowerCase()] ?? p[keyY.toUpperCase()];
           const time = p.time ?? "";
+          const theta = p.Line_theta ?? p.line_theta ?? p.LINE_THETA ?? null;
           if (!isNaN(x) && !isNaN(y)) {
-            pushTo.push({ x: +x, y: +y, time });
+            pushTo.push({ x: +x, y: +y, time, theta });
           } else {
             console.warn(`❌ Invalid point for (${keyX}, ${keyY}):`, p);
           }
@@ -286,37 +287,71 @@
           y: path.map(p => p.y),
           mode: 'lines+markers',
           name: 'Odometry',
+          line: { color: 'green' },
+          marker: { color: 'green' },
           text: path.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
           hoverinfo: 'text'
         });
       }
+
       if (line.length > 0) {
+        const centerLineColor = 'orange';  // 🎨 Choose any consistent color
         traces.push({
           x: line.map(p => p.x),
           y: line.map(p => p.y),
           mode: 'markers',
           name: 'Center Line',
-          marker: { size: 6 },
+          marker: { size: 6, color: centerLineColor },
           text: line.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
           hoverinfo: 'text'
         });
+
+        // ➤ Add directional arrows for Line_theta
+        const arrowScale = 2;
+        const arrowX = [], arrowY = [], arrowU = [], arrowV = [];
+
+        for (const p of line) {
+          if (p.theta != null) {
+            const dx = arrowScale * Math.cos(p.theta);
+            const dy = arrowScale * Math.sin(p.theta);
+            arrowX.push(p.x);
+            arrowY.push(p.y);
+            arrowU.push(p.x + dx);
+            arrowV.push(p.y + dy);
+          }
+        }
+
+        for (let i = 0; i < arrowX.length; i++) {
+          traces.push({
+            x: [arrowX[i], arrowU[i]],
+            y: [arrowY[i], arrowV[i]],
+            mode: 'lines',
+            line: { color: centerLineColor, width: 2 },
+            showlegend: false,
+            hoverinfo: 'none'
+          });
+        }
       }
+
       if (lWall.length > 0) {
         traces.push({
           x: lWall.map(p => p.x),
           y: lWall.map(p => p.y),
           mode: 'markers',
           name: 'Left Wall',
+          marker: { color: 'red', size: 6 },
           text: lWall.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
           hoverinfo: 'text'
         });
       }
+
       if (rWall.length > 0) {
         traces.push({
           x: rWall.map(p => p.x),
           y: rWall.map(p => p.y),
           mode: 'markers',
           name: 'Right Wall',
+          marker: { color: 'blue', size: 6 },
           text: rWall.map(p => `Time: ${p.time?.split("-").slice(1).join(":")}`),
           hoverinfo: 'text'
         });
@@ -330,11 +365,11 @@
           margin: { t: 10 },
           xaxis: { title: 'X', scaleanchor: 'y' },
           yaxis: { title: 'Y' },
-          hovermode: 'closest'  // 👈 this makes hover work per dot!
+          hovermode: 'closest'
         });
       }
-
     }
+
 
 
     function refreshAll() {
