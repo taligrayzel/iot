@@ -53,6 +53,44 @@
       color: #888;
       font-size: 0.9em;
     }
+
+    #fixed-maze-container {
+      position: fixed;
+      top: 100px;
+      left: 0;
+      width: 280px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 0 12px 12px 0;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15);
+      padding: 15px;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    #fixed-maze-container.minimized {
+      transform: translateX(-100%);
+    }
+
+    #mazePreviewToggle {
+      position: fixed;
+      top: 110px;
+      left: 280px;
+      z-index: 1100;
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+      transition: left 0.3s ease;
+    }
+
+    #fixed-maze-container.minimized + #mazePreviewToggle {
+      left: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -70,11 +108,13 @@
 </div>
   <h1>🤖 Live Robot Dashboard</h1>
 
-  <div class="section" style="display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start;">
-    <div style="flex: 0 0 35%; min-width: 250px;">
-      <h2>🧩 Maze Configuration</h2>
-      <div id="mazePreview"></div>
-    </div>
+  <div id="fixed-maze-container">
+    <h2>🧩 Maze Configuration</h2>
+    <div id="mazePreview"></div>
+  </div>
+  <button id="mazePreviewToggle" onclick="toggleMaze()">⏪</button>
+  
+  
   
     <div style="flex: 1 1 65%; min-width: 300px;">
       <h2>🛼 Path Visualization</h2>
@@ -382,7 +422,7 @@
     }
 
     refreshAll();
-    setInterval(refreshAll, 1000);
+    setInterval(refreshAll, 2000);
 
     async function renderMazePreview() {
       const [gridRes, pathRes, startRes, endRes] = await Promise.all([
@@ -443,6 +483,14 @@
 
 
   renderMazePreview();
+
+  function toggleMaze() {
+    const container = document.getElementById('fixed-maze-container');
+    const button = document.getElementById('mazePreviewToggle');
+    container.classList.toggle('minimized');
+    button.textContent = container.classList.contains('minimized') ? 'Maze⏩' : 'Maze⏪';
+  }
+  
 
   </script>
 </body>
